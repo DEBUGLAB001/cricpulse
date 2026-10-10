@@ -27,9 +27,15 @@ const pollVotes = {
 
 // Helper for dynamic service resolution (reloads on every call so edits apply immediately)
 function freshRequire(serviceRelativePath) {
-  const resolved = path.resolve(__dirname, serviceRelativePath);
-  delete require.cache[resolved];
-  return require(resolved);
+  try {
+    const fullPath = require.resolve(path.resolve(__dirname, serviceRelativePath));
+    delete require.cache[fullPath];
+    return require(fullPath);
+  } catch (err) {
+    const fallback = path.resolve(__dirname, serviceRelativePath);
+    delete require.cache[fallback];
+    return require(fallback);
+  }
 }
 
 // Session authentication middleware helper

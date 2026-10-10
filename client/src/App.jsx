@@ -24,6 +24,7 @@ export default function App() {
 
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [reachResult, setReachResult] = useState(null);
+  const [selectedPlayerId, setSelectedPlayerId] = useState(0);
   const [toast, setToast] = useState(null);
   const [fanVoteCount, setFanVoteCount] = useState(0);
   const [pollVotes, setPollVotes] = useState({
@@ -48,22 +49,29 @@ export default function App() {
     return headers;
   }, [session]);
 
-  // Fetch initial match state and analytics
+  // Fetch initial match state, analytics, and reachability
   const fetchData = useCallback(async () => {
     try {
-      const [stateRes, analyticsRes, noteRes] = await Promise.all([
+      const [stateRes, analyticsRes, noteRes, reachRes] = await Promise.all([
         fetch('/api/state').then((r) => (r.ok ? r.json() : null)),
         fetch('/api/analytics').then((r) => (r.ok ? r.json() : null)),
-        fetch('/api/player-note').then((r) => (r.ok ? r.json() : null))
+        fetch('/api/player-note').then((r) => (r.ok ? r.json() : null)),
+        fetch(`/api/reachable/${selectedPlayerId}`).then((r) => (r.ok ? r.json() : null))
       ]);
 
       if (stateRes) setMatchState(stateRes);
       if (analyticsRes) setAnalytics(analyticsRes);
       if (noteRes && noteRes.note) setPlayerNote(noteRes.note);
+      if (reachRes) {
+        setReachResult({
+          playerId: selectedPlayerId,
+          reachable: reachRes.reachable || []
+        });
+      }
     } catch (err) {
       console.error('Error fetching live data:', err);
     }
-  }, []);
+  }, [selectedPlayerId]);
 
   useEffect(() => {
     fetchData();
@@ -103,6 +111,7 @@ export default function App() {
 
   // Scan reachable players
   const handleScanPlayer = async (playerId) => {
+    setSelectedPlayerId(playerId);
     try {
       const res = await fetch(`/api/reachable/${playerId}`);
       if (!res.ok) {
