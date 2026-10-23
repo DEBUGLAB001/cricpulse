@@ -11,5 +11,13 @@
         "type": "preview"
       }
     ]
-  }
+  },
+  "bug_topics": [
+    "Depth-First Search",
+    "Sliding Window",
+    "Moving Average",
+    "Maximum Bottleneck Path",
+    "Access Control",
+    "Rate Limiting"
+  ]
 }
